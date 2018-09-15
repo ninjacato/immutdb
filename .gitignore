@@ -1,3 +1,7 @@
 *.swp
 lib/
 *.exedat
+*.o
+*.a
+*.so
+*.d

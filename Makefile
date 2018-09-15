@@ -4,12 +4,26 @@ CC = g++ --std=c++11
 
 OBJECTS = $(SRCDIR)/ImmutDB.cpp $(SRCDIR)/Database.cpp
 all: $(OBJECTS)
-	$(CC) -o immutdb.exedat $(OBJECTS) -lcaf_core -lrocksdb
+	$(CC) -o immutdb.exedat $? -lcaf_core -lrocksdb
 
-DatabaseTests: $(TESTDIR)/DatabaseTests.cpp $(SRCDIR)/Database.cpp
-	$(CC) -o $(TESTDIR)/$@.exedat $^ 
+$(TESTDIR)/DatabaseTests.o: $(TESTDIR)/DatabaseTests.cpp
+	$(CC) -c -o $@ $? 
+
+$(SRCDIR)/Database.o: $(SRCDIR)/Database.cpp
+	$(CC) -c -o $@ $? 
+
+$(TESTDIR)/DatabaseTests: $(TESTDIR)/DatabaseTests.o $(SRCDIR)/Database.o
+	$(CC) -o $@.exedat $? 
 
 .PHONY: tests
-tests: DatabaseTests
-	./$(TESTDIR)/DatabaseTests
+tests: $(TESTDIR)/DatabaseTests
+	./$(TESTDIR)/DatabaseTests.exedat
 
+.PHONY: clean
+clean:
+	rm -f ./*.o
+	rm -f ./*.exedat
+	rm -f ./$(SRCDIR)/*.exedat
+	rm -f ./$(TESTDIR)/*.exedat
+	rm -f ./$(SRCDIR)/*.o
+	rm -f ./$(TESTDIR)/*.o
