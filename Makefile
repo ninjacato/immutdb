@@ -1,6 +1,6 @@
 SRCDIR = src
 TESTDIR = tests
-CC = g++ --std=c++11
+CC = g++ --std=c++17
 
 OBJECTS = $(SRCDIR)/ImmutDB.cpp $(SRCDIR)/Database.cpp
 all: $(OBJECTS)
@@ -13,7 +13,7 @@ $(SRCDIR)/Database.o: $(SRCDIR)/Database.cpp
 	$(CC) -c -o $@ $? 
 
 $(TESTDIR)/DatabaseTests: $(TESTDIR)/DatabaseTests.o $(SRCDIR)/Database.o
-	$(CC) -o $@.exedat $? 
+	$(CC) -o $@.exedat $? -lrocksdb
 
 .PHONY: tests
 tests: $(TESTDIR)/DatabaseTests
