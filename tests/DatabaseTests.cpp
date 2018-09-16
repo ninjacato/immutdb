@@ -79,8 +79,10 @@ TEST_CASE("Database can get a custom keyspace", "[Database]") {
 	
 	cdb.put("akey", "avalue", "Customer");
 	optional<unique_ptr<string>> value = cdb.get("akey", "Customer");
+	optional<unique_ptr<string>> novalue = cdb.get("akey");
 
 	REQUIRE(**value == string("avalue"));
+	REQUIRE(!novalue);
 
 	system(delcmd.c_str());
 	return;
