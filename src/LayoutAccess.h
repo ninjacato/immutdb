@@ -1,14 +1,14 @@
-#ifndef LAYOUT_H
-#define LAYOUT_H
+#ifndef LAYOUTACCESS_H
+#define LAYOUTACCESS_H
 
 #include "Database.h"
 
-class Layout {
+class LayoutAccess {
 	Database& _db;
 	const string& _ks;
 	bool _hasLock;
 public:
-	Layout(Database& db, const string& keyspace);
+	LayoutAccess(Database& db, const string& keyspace);
 	bool hasLock(void);
 	bool lock(void);
 	void release(void);

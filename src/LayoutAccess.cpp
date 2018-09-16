@@ -1,16 +1,16 @@
 #include <thread>
 #include <sstream>
-#include "Layout.h"
+#include "LayoutAccess.h"
 
 using namespace std;
 
-Layout::Layout(Database& db, const string& keyspace) : _db(db), _ks(keyspace) {
+LayoutAccess::LayoutAccess(Database& db, const string& keyspace) : _db(db), _ks(keyspace) {
 	assert(db.isOpen());
 	assert(!keyspace.empty());
 }
 
 bool 
-Layout::lock(void) {
+LayoutAccess::lock(void) {
 	auto tid = this_thread::get_id();
 	ostringstream ss;
 	auto lock_key = string("s_") + _ks + string("_lock");
@@ -31,7 +31,7 @@ Layout::lock(void) {
 }
 
 void
-Layout::release(void) {
+LayoutAccess::release(void) {
 	auto tid = this_thread::get_id();
 	ostringstream ss;
 	auto lock_key = string("s_") + _ks + string("_lock");
@@ -47,6 +47,6 @@ Layout::release(void) {
 };
 
 bool
-Layout::hasLock(void) {
+LayoutAccess::hasLock(void) {
 	return _hasLock;
 }
