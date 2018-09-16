@@ -11,6 +11,7 @@ public:
 	Schema(Database& db, const string& keyspace);
 	bool hasLock(void);
 	bool lock(void);
+	void release(void);
 };
 
 #endif

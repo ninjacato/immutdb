@@ -24,10 +24,27 @@ Schema::lock(void) {
 		return false;
 	}
 
+	// Read back to ensure another thread didn't overwrite it
 	lock_val = _db.get(lock_key, _ks);
 	_hasLock = lock_val && **lock_val == ss.str();
 	return _hasLock;	
 }
+
+void
+Schema::release(void) {
+	auto tid = this_thread::get_id();
+	ostringstream ss;
+	auto lock_key = string("s_") + _ks + string("_lock");
+	auto lock_val = _db.get(lock_key, _ks);
+
+	ss << tid;
+	if(!_hasLock) return;
+
+	if(lock_val && **lock_val == ss.str()) {
+		_db.del(lock_key, _ks);
+		_hasLock = false;
+	} 
+};
 
 bool
 Schema::hasLock(void) {
