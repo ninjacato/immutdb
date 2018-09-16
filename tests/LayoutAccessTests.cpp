@@ -7,18 +7,20 @@
 TEST_CASE("Set layout lock", "[Layout}") {
 	const string& path = string("/tmp/immutdb_tests_layout_lock");
 	const string& delcmd = string("rm -r ") + path;
-	const string& keyspace = "Customer";
+	const string& layoutName = "Customer";
 
 	Database db(path);
 	db.open();
 
-	LayoutAccess layout(db, keyspace);	
+	LayoutAccess layout(db);	
 
-	layout.lock();
-	REQUIRE(layout.hasLock());
+	REQUIRE(layout.lock(layoutName));
+	REQUIRE(layout.hasLock(layoutName));
 
-	layout.release();
-	REQUIRE(!layout.hasLock());
+	layout.release(layoutName);
+	REQUIRE(!layout.hasLock(layoutName));
+
+	REQUIRE(!layout.hasLock("Nonsense"));
 
 	system(delcmd.c_str());
 }

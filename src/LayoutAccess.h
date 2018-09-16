@@ -5,13 +5,13 @@
 
 class LayoutAccess {
 	Database& _db;
-	const string& _ks;
 	bool _hasLock;
+	unordered_map<string, bool> _locks;
 public:
-	LayoutAccess(Database& db, const string& keyspace);
-	bool hasLock(void);
-	bool lock(void);
-	void release(void);
+	LayoutAccess(Database& db);
+	bool hasLock(const string& layoutName);
+	bool lock(const string& layoutName);
+	void release(const string& layoutName);
 };
 
 #endif
