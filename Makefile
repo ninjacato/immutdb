@@ -9,25 +9,25 @@ all: $(OBJECTS)
 $(TESTDIR)/DatabaseTests.o: $(TESTDIR)/DatabaseTests.cpp
 	$(CC) -c -o $@ $? 
 
-$(TESTDIR)/SchemaTests.o: $(TESTDIR)/SchemaTests.cpp
+$(TESTDIR)/LayoutTests.o: $(TESTDIR)/LayoutTests.cpp
 	$(CC) -c -o $@ $? 
 
 $(SRCDIR)/Database.o: $(SRCDIR)/Database.cpp
 	$(CC) -c -o $@ $? 
 
-$(SRCDIR)/Schema.o: $(SRCDIR)/Schema.cpp $(SRCDIR)/Database.o
+$(SRCDIR)/Layout.o: $(SRCDIR)/Layout.cpp 
 	$(CC) -c -o $@ $? 
 
 $(TESTDIR)/DatabaseTests: $(TESTDIR)/DatabaseTests.o $(SRCDIR)/Database.o
 	$(CC) -o $@.exedat $? -lrocksdb
 
-$(TESTDIR)/SchemaTests: $(TESTDIR)/SchemaTests.o $(SRCDIR)/Schema.o $(SRCDIR)/Database.o
+$(TESTDIR)/LayoutTests: $(TESTDIR)/LayoutTests.o $(SRCDIR)/Layout.o $(SRCDIR)/Database.o
 	$(CC) -o $@.exedat $? -lrocksdb
 
 .PHONY: tests
-tests: $(TESTDIR)/DatabaseTests $(TESTDIR)/SchemaTests
+tests: $(TESTDIR)/DatabaseTests $(TESTDIR)/LayoutTests
 	./$(TESTDIR)/DatabaseTests.exedat
-	./$(TESTDIR)/SchemaTests.exedat
+	./$(TESTDIR)/LayoutTests.exedat
 
 .PHONY: clean
 clean:

@@ -1,16 +1,16 @@
 #include <thread>
 #include <sstream>
-#include "Schema.h"
+#include "Layout.h"
 
 using namespace std;
 
-Schema::Schema(Database& db, const string& keyspace) : _db(db), _ks(keyspace) {
+Layout::Layout(Database& db, const string& keyspace) : _db(db), _ks(keyspace) {
 	assert(db.isOpen());
 	assert(!keyspace.empty());
 }
 
 bool 
-Schema::lock(void) {
+Layout::lock(void) {
 	auto tid = this_thread::get_id();
 	ostringstream ss;
 	auto lock_key = string("s_") + _ks + string("_lock");
@@ -31,7 +31,7 @@ Schema::lock(void) {
 }
 
 void
-Schema::release(void) {
+Layout::release(void) {
 	auto tid = this_thread::get_id();
 	ostringstream ss;
 	auto lock_key = string("s_") + _ks + string("_lock");
@@ -47,6 +47,6 @@ Schema::release(void) {
 };
 
 bool
-Schema::hasLock(void) {
+Layout::hasLock(void) {
 	return _hasLock;
 }
