@@ -126,3 +126,8 @@ Database::getHandle(const string& keyspace) {
 	
 	return handle;
 }
+
+bool
+Database::isOpen(void) {
+	return !closed;
+};

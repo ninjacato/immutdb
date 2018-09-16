@@ -71,7 +71,7 @@ TEST_CASE("Database can delete a key", "[Database]") {
 }
 
 TEST_CASE("Database can get a custom keyspace", "[Database]") {
-	const string& path = string("/tmp/immutdb_tests_") + string(random_string(20));
+	const string& path = string("/tmp/immutdb_tests_") + string(random_string(22));
 	const string& delcmd = string("rm -r ") + path;
 
 	Database cdb(path);
@@ -85,5 +85,19 @@ TEST_CASE("Database can get a custom keyspace", "[Database]") {
 	REQUIRE(!novalue);
 
 	system(delcmd.c_str());
-	return;
+}
+
+TEST_CASE("Database can check status", "[Database]") {
+	const string& path = string("/tmp/immutdb_tests_") + string(random_string(23));
+	const string& delcmd = string("rm -r ") + path;
+
+	Database cdb(path);
+
+	cdb.open();
+	REQUIRE(cdb.isOpen());
+
+	cdb.close();
+	REQUIRE(!cdb.isOpen());
+
+	system(delcmd.c_str());
 }

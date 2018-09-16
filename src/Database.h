@@ -21,6 +21,7 @@ public:
 	~Database();
 	void open(void);
 	void close(void);
+	bool isOpen(void);
 	void put(const string& key, const string& val);
 	void put(const string& key, const string& val, const string& keyspace);
 	void del(const string& key);
