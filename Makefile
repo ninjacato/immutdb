@@ -1,6 +1,6 @@
 SRCDIR = src
 TESTDIR = tests
-CC = g++ --std=c++17
+CC = g++ --std=c++17 -g -Wall
 
 OBJECTS = $(SRCDIR)/ImmutDB.cpp $(SRCDIR)/Database.cpp
 all: $(OBJECTS)

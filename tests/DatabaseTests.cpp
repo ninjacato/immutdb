@@ -23,7 +23,7 @@ std::string random_string(size_t length)
 
 TEST_CASE("Database create file if not already existent", "[Database]") {
 	bool dbExists;
-	const string& path = string("/tmp/immutdb_tests_") + string(random_string(20));
+	const string& path = string("/tmp/immutdb_tests_") + string(random_string(19));
 	const string& delcmd = string("rm -r ") + path;
 
 	dbExists = (access(path.c_str(), F_OK) != -1);
@@ -47,9 +47,41 @@ TEST_CASE("Database can get and put file", "[Database]") {
 	db.open();
 	
 	db.put("akey", "avalue");
-	unique_ptr<string> value = db.get("akey");
+	optional<unique_ptr<string>> value = db.get("akey");
 
-	REQUIRE(*value == string("avalue"));
+	REQUIRE(**value == string("avalue"));
 
 	system(delcmd.c_str());
+}
+
+TEST_CASE("Database can delete a key", "[Database]") {
+	const string& path = string("/tmp/immutdb_tests_") + string(random_string(21));
+	const string& delcmd = string("rm -r ") + path;
+
+	Database db(path);
+	db.open();
+	
+	db.put("akey", "avalue");
+	db.del("akey");
+
+	optional<unique_ptr<string>> value = db.get("akey");
+	REQUIRE(!value);
+
+	system(delcmd.c_str());
+}
+
+TEST_CASE("Database can get a custom keyspace", "[Database]") {
+	const string& path = string("/tmp/immutdb_tests_") + string(random_string(20));
+	const string& delcmd = string("rm -r ") + path;
+
+	Database cdb(path);
+	cdb.open();
+	
+	cdb.put("akey", "avalue", "Customer");
+	optional<unique_ptr<string>> value = cdb.get("akey", "Customer");
+
+	REQUIRE(**value == string("avalue"));
+
+	system(delcmd.c_str());
+	return;
 }

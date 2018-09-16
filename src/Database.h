@@ -9,14 +9,23 @@ using namespace std;
 using namespace rocksdb;
 
 class Database {
+	bool closed;
 	const string& _path;
-	DB * _db;
+	DB * db;
 	Options options;
+	vector<ColumnFamilyDescriptor> cfd;
+	vector<ColumnFamilyHandle*> handles;
+	ColumnFamilyHandle * getHandle(const string& keyspace);
 public:
 	Database(const string& path);
+	~Database();
 	void open(void);
 	void close(void);
 	void put(const string& key, const string& val);
-	unique_ptr<string> get(const string& key);
+	void put(const string& key, const string& val, const string& keyspace);
+	void del(const string& key);
+	void del(const string& key, const string& keyspace);
+	optional<unique_ptr<string>> get(const string& key);
+	optional<unique_ptr<string>> get(const string& key, const string &keyspace);
 };
 #endif
