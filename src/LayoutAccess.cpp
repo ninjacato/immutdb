@@ -120,6 +120,11 @@ LayoutAccess::getLayout(const string& name, int version) {
 	return make_unique<Layout>(layout);
 }
 
+void
+LayoutAccess::deleteLayout(const string& name) {
+	_db.deleteKeyspace(name);	
+}
+
 bool
 LayoutAccess::hasLock(const string& layoutName) {
 	bool locked;

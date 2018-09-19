@@ -103,6 +103,30 @@ Database::del(const string& key, const string& keyspace) {
 	assert(s.ok());
 }
 
+void
+Database::deleteKeyspace(const string& keyspace) {
+	auto handle = getHandle(keyspace);
+	int i = -1;
+	db->DropColumnFamily(handle);
+
+	for(i = 0; i < (int)handles.size(); i++) {
+		if(handles[i]->GetName() == keyspace) {
+			break;
+		}
+	}
+
+	if(i > -1) handles.erase(handles.begin() + i);
+
+	for(i = 0; i < (int)cfd.size(); i++) {
+		if(cfd[i].name == keyspace) {
+			break;
+		}
+	}
+	
+	if(i > -1) cfd.erase(cfd.begin() + i);
+	delete handle;
+}
+
 ColumnFamilyHandle *
 Database::getHandle(const string& keyspace) {
 	Status s;

@@ -26,6 +26,7 @@ public:
 	void put(const string& key, const string& val, const string& keyspace);
 	void del(const string& key);
 	void del(const string& key, const string& keyspace);
+	void deleteKeyspace(const string& keyspace);
 	optional<unique_ptr<string>> get(const string& key);
 	optional<unique_ptr<string>> get(const string& key, const string &keyspace);
 };

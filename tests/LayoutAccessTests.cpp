@@ -124,3 +124,35 @@ TEST_CASE("Can migrate a layout to new layout structure", "[Layout]") {
 
 	system(delcmd.c_str());
 }
+
+TEST_CASE("Can delete a layout", "[Layout]") {
+
+	const string& path = string("/tmp/immutdb_tests_layout_delete");
+	const string& delcmd = string("rm -r ") + path;
+	const string& layoutName = "Customer";
+
+	vector<Slot> slots {
+		{ "Name", SlotType::STRING },
+		{ "Age", SlotType::INT }
+	};
+
+	Layout layout { 1, slots };
+
+	optional<unique_ptr<Layout>> created_layout;
+
+	Database db(path);
+	db.open();
+
+	LayoutAccess layoutAccess(db);
+	layoutAccess.createLayout(layoutName, layout);
+
+	created_layout = layoutAccess.getLayout(layoutName);
+	REQUIRE(created_layout);
+	layoutAccess.release(layoutName);
+
+	layoutAccess.deleteLayout(layoutName);
+	created_layout = layoutAccess.getLayout(layoutName);
+	REQUIRE(!created_layout);
+
+	system(delcmd.c_str());
+}

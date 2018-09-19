@@ -34,6 +34,7 @@ public:
 	void release(const string& layoutName);
 	void createLayout(const string& name, Layout& layout);
 	void migrateLayout(const string& name, Layout& layout);
+	void deleteLayout(const string& name);
 	optional<unique_ptr<Layout>> getLayout(const string& name);
 	optional<unique_ptr<Layout>> getLayout(const string& name, int version);
 };
