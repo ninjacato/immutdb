@@ -1,5 +1,6 @@
 #include <thread>
 #include <sstream>
+#include <msgpack.hpp>
 #include "LayoutAccess.h"
 
 using namespace std;
@@ -42,7 +43,59 @@ LayoutAccess::release(const string& layoutName) {
 		_db.del(lock_key, layoutName);
 		_locks[layoutName] = false;
 	} 
-};
+}
+
+void 
+LayoutAccess::createLayout(const string& name, Layout& layout) {
+	const string& layoutKey = string("s_") + name + string(":0");
+	const string& currentLayoutKey = string("s_") + name + string(":c");
+	map<string, int> slots;
+	auto key = _db.get(layoutKey, name);
+	stringstream buffer;
+	
+	if(key) {
+		return; // Key exists
+	}
+
+	layout.version = 0;
+	for(auto slot : layout.slots) {
+		slots.insert(make_pair(slot.name, slot.type));
+	}
+	
+	msgpack::type::tuple<int, map<string, int>> src(layout.version, slots);
+	msgpack::pack(buffer, src);
+	_db.put(layoutKey, buffer.str(), name); 
+	_db.put(currentLayoutKey, buffer.str(), name); 
+}
+
+optional<unique_ptr<Layout>>
+LayoutAccess::getLayout(const string& name) {
+	return getLayout(name, 0);
+}
+
+optional<unique_ptr<Layout>>
+LayoutAccess::getLayout(const string& name, int version) {
+	const string& layoutKey = string("s_") + name + string(":") + to_string(version);
+	auto rawLayout = _db.get(layoutKey, name);
+
+	if(!rawLayout) return nullopt; 
+	
+	string str = **rawLayout;
+	msgpack::object_handle oh = msgpack::unpack(str.data(), str.size());
+	msgpack::object deserialized = oh.get();
+
+	msgpack::type::tuple<int, map<string, int>> stored;
+	deserialized.convert(stored);
+
+	Layout layout;
+	layout.version = stored.get<0>();
+
+	for(auto& kv : stored.get<1>()) {
+		layout.slots.push_back(Slot { kv.first, static_cast<SlotType>(kv.second) });
+	}
+
+	return make_unique<Layout>(layout);
+}
 
 bool
 LayoutAccess::hasLock(const string& layoutName) {
