@@ -5,6 +5,8 @@
 
 using namespace std;
 
+#define LA_CURRENT_LAYOUT -1
+
 LayoutAccess::LayoutAccess(Database& db) : _db(db) {
 	assert(db.isOpen());
 }
@@ -48,6 +50,27 @@ LayoutAccess::release(const string& layoutName) {
 void 
 LayoutAccess::createLayout(const string& name, Layout& layout) {
 	const string& layoutKey = string("s_") + name + string(":0");
+	auto key = _db.get(layoutKey, name);
+	
+	if(key)	return; 
+
+	_createLayout(name, layout, 0);
+}
+
+void
+LayoutAccess::migrateLayout(const string& name, Layout& layout) {
+	auto wrappedCurrentLayout = getLayout(name);
+	if(!wrappedCurrentLayout) return;
+
+	auto currentLayout = **wrappedCurrentLayout; 	
+	layout.version = currentLayout.version + 1;
+
+	_createLayout(name, layout, layout.version);
+}
+
+void
+LayoutAccess::_createLayout(const string& name, Layout& layout, int version) {
+	const string& layoutKey = string("s_") + name + string(":") + to_string(version);
 	const string& currentLayoutKey = string("s_") + name + string(":c");
 	map<string, int> slots;
 	auto key = _db.get(layoutKey, name);
@@ -57,7 +80,7 @@ LayoutAccess::createLayout(const string& name, Layout& layout) {
 		return; // Key exists
 	}
 
-	layout.version = 0;
+	layout.version = version;
 	for(auto slot : layout.slots) {
 		slots.insert(make_pair(slot.name, slot.type));
 	}
@@ -70,12 +93,12 @@ LayoutAccess::createLayout(const string& name, Layout& layout) {
 
 optional<unique_ptr<Layout>>
 LayoutAccess::getLayout(const string& name) {
-	return getLayout(name, 0);
+	return getLayout(name, LA_CURRENT_LAYOUT);
 }
 
 optional<unique_ptr<Layout>>
 LayoutAccess::getLayout(const string& name, int version) {
-	const string& layoutKey = string("s_") + name + string(":") + to_string(version);
+	const string& layoutKey = string("s_") + name + string(":") + (version < 0 ? "c" : to_string(version));
 	auto rawLayout = _db.get(layoutKey, name);
 
 	if(!rawLayout) return nullopt; 
