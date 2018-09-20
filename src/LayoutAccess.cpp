@@ -110,14 +110,14 @@ LayoutAccess::getLayout(const string& name, int version) {
 	msgpack::type::tuple<int, map<string, int>> stored;
 	deserialized.convert(stored);
 
-	Layout layout;
-	layout.version = stored.get<0>();
+	auto layout = make_unique<Layout>();
+	layout->version = stored.get<0>();
 
 	for(auto& kv : stored.get<1>()) {
-		layout.slots.push_back(Slot { kv.first, static_cast<SlotType>(kv.second) });
+		layout->slots.push_back(Slot { kv.first, static_cast<SlotType>(kv.second) });
 	}
 
-	return make_unique<Layout>(layout);
+	return layout;
 }
 
 void

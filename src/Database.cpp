@@ -58,17 +58,16 @@ Database::get(const string& key) {
 optional<unique_ptr<string>> 
 Database::get(const string& key, const string& keyspace) {
 	Status s;
-	string value;
-	ColumnFamilyHandle * handle;
 
-	handle = getHandle(keyspace);
-	s = db->Get(ReadOptions(), handle, key, &value);	
+	auto handle = getHandle(keyspace);
+	auto value = make_unique<string>();
+	s = db->Get(ReadOptions(), handle, key, &(*value));	
 
 	if(s.IsNotFound()) {
 		return nullopt;
 	}
 	
-	return make_unique<string>(value);
+	return value;
 }
 
 void 
