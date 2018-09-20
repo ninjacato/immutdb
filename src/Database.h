@@ -4,6 +4,7 @@
 #include <string>
 #include "rocksdb/db.h"
 #include "rocksdb/options.h"
+#include "rocksdb/slice_transform.h"
 
 using namespace std;
 using namespace rocksdb;
@@ -16,10 +17,12 @@ class Database {
 	vector<ColumnFamilyDescriptor> cfd;
 	vector<ColumnFamilyHandle*> handles;
 	ColumnFamilyHandle * getHandle(const string& keyspace);
+	void init();
 public:
 	Database(const string& path);
 	~Database();
 	void open(void);
+	void openReadByPrefix(const string& prefix);
 	void close(void);
 	bool isOpen(void);
 	void put(const string& key, const string& val);

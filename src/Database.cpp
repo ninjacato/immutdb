@@ -17,7 +17,7 @@ Database::~Database(void) {
 }
 
 void 
-Database::open(void) {
+Database::init(void) {
 	Status s;
 	closed = false;
 	vector<string> familyNames;
@@ -29,8 +29,24 @@ Database::open(void) {
 				cfd.push_back(ColumnFamilyDescriptor(name, ColumnFamilyOptions()));
 		}
 	}
+}
+
+void 
+Database::open(void) {
+	Status s;
+	init();
 
 	s = DB::Open(options, _path, cfd, &handles, &db);
+	assert(s.ok());
+}
+
+void 
+Database::openReadByPrefix(const string& prefix) {
+	Status s;
+	init();
+
+	options.prefix_extractor.reset(NewFixedPrefixTransform(prefix.length()));
+	s = DB::OpenForReadOnly(options, _path, cfd, &handles, &db);
 	assert(s.ok());
 }
 
