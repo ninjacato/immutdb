@@ -39,7 +39,7 @@ TEST_CASE("Database create file if not already existent", "[Database]") {
 	system(delcmd.c_str());
 }
 
-TEST_CASE("Database can get and put file", "[Database]") {
+TEST_CASE("Database can get and put key", "[Database]") {
 	const string& path = string("/tmp/immutdb_tests_") + string(random_string(20));
 	const string& delcmd = string("rm -r ") + path;
 
@@ -98,6 +98,37 @@ TEST_CASE("Database can check status", "[Database]") {
 
 	cdb.close();
 	REQUIRE(!cdb.isOpen());
+
+	system(delcmd.c_str());
+}
+
+TEST_CASE("Database can open read only DB", "[Database]") {
+	const string& path = string("/tmp/immutdb_tests_") + string(random_string(20));
+	const string& delcmd = string("rm -r ") + path;
+
+	Database db(path);
+	db.open();
+	
+	db.put("akey", "avalue");
+	optional<unique_ptr<string>> value = db.get("akey");
+
+	REQUIRE(**value == string("avalue"));
+
+	Database db1(path);
+	db1.openReadOnly();
+	optional<unique_ptr<string>> value1 = db1.get("akey");
+
+	Database db2(path);
+	db2.openReadOnly();
+	optional<unique_ptr<string>> value2 = db2.get("akey");
+
+	Database db3(path);
+	db3.openReadOnly();
+	optional<unique_ptr<string>> value3 = db3.get("akey");
+
+	REQUIRE(**value1 == string("avalue"));
+	REQUIRE(**value2 == string("avalue"));
+	REQUIRE(**value3 == string("avalue"));
 
 	system(delcmd.c_str());
 }

@@ -41,11 +41,10 @@ Database::open(void) {
 }
 
 void 
-Database::openReadByPrefix(const string& prefix) {
+Database::openReadOnly(void) {
 	Status s;
 	init();
 
-	options.prefix_extractor.reset(NewFixedPrefixTransform(prefix.length()));
 	s = DB::OpenForReadOnly(options, _path, cfd, &handles, &db);
 	assert(s.ok());
 }
@@ -86,6 +85,21 @@ Database::get(const string& key, const string& keyspace) {
 	return value;
 }
 
+unique_ptr<vector<string>>
+Database::getAll(const string& key, const string& keyspace, int range) {
+	auto handle = getHandle(keyspace);
+	auto * it = db->NewIterator(ReadOptions(), handle);
+	vector<string> values;
+
+	for(it->Seek(key); it->Valid() && range >= 0; it->Next(), range--) {
+		auto str = it->value().ToString();
+		values.push_back(str);
+	}
+
+	delete it;
+	
+	return make_unique<vector<string>>(values);
+}
 void 
 Database::put(const string& key, const string& val) {
 	put(key, val, kDefaultColumnFamilyName);
