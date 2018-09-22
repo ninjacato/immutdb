@@ -18,11 +18,10 @@ Database::~Database(void) {
 
 void 
 Database::init(void) {
-	Status s;
 	closed = false;
 	vector<string> familyNames;
 
-	s = DB::ListColumnFamilies(options, _path, &familyNames);
+	auto s = DB::ListColumnFamilies(options, _path, &familyNames);
 	if(s.code() != Status::kIOError) {
 		for (auto name : familyNames) {
 			if (name != kDefaultColumnFamilyName)
@@ -33,19 +32,17 @@ Database::init(void) {
 
 void 
 Database::open(void) {
-	Status s;
 	init();
 
-	s = DB::Open(options, _path, cfd, &handles, &db);
+	auto s = DB::Open(options, _path, cfd, &handles, &db);
 	assert(s.ok());
 }
 
 void 
 Database::openReadOnly(void) {
-	Status s;
 	init();
 
-	s = DB::OpenForReadOnly(options, _path, cfd, &handles, &db);
+	auto s = DB::OpenForReadOnly(options, _path, cfd, &handles, &db);
 	assert(s.ok());
 }
 
@@ -72,11 +69,9 @@ Database::get(const string& key) {
 
 unique_ptr<string>
 Database::get(const string& key, const string& keyspace) {
-	Status s;
-
 	auto handle = getHandle(keyspace);
 	auto value = make_unique<string>();
-	s = db->Get(ReadOptions(), handle, key, &(*value));	
+	auto s = db->Get(ReadOptions(), handle, key, &(*value));	
 
 	if(s.IsNotFound()) {
 		return nullptr;
@@ -91,6 +86,7 @@ Database::getAll(const string& key, const string& keyspace) {
 	auto * it = db->NewIterator(ReadOptions(), handle);
 	vector<string> values;
 
+	// TODO: Crazy inefficient. Seek takes a limit, use this instead of ToString()
 	for(it->Seek(key); it->Valid() && !it->key().ToString().compare(0, key.size(), key); it->Next()) {
 		auto str = it->value().ToString();
 		values.push_back(str);
@@ -108,12 +104,10 @@ Database::put(const string& key, const string& val) {
 
 void 
 Database::put(const string& key, const string& val, const string& keyspace) {
-	Status s;
-	ColumnFamilyHandle * handle;
 	if(key.empty()) return;	
 
-	handle = getHandle(keyspace);
-	s = db->Put(WriteOptions(), handle, key, val);
+	auto handle = getHandle(keyspace);
+	auto s = db->Put(WriteOptions(), handle, key, val);
 	assert(s.ok());
 }
 
@@ -124,19 +118,17 @@ Database::del(const string& key) {
 
 void 
 Database::del(const string& key, const string& keyspace) {
-	Status s;
-	ColumnFamilyHandle * handle;
 	if(key.empty()) return;
 		
-	handle = getHandle(keyspace);
-	s = db->Delete(WriteOptions(), handle, key);
+	auto handle = getHandle(keyspace);
+	auto s = db->Delete(WriteOptions(), handle, key);
 	assert(s.ok());
 }
 
 void
 Database::deleteKeyspace(const string& keyspace) {
 	auto handle = getHandle(keyspace);
-	int i = -1;
+	auto i = -1;
 	db->DropColumnFamily(handle);
 
 	for(i = 0; i < (int)handles.size(); i++) {
@@ -159,7 +151,6 @@ Database::deleteKeyspace(const string& keyspace) {
 
 ColumnFamilyHandle *
 Database::getHandle(const string& keyspace) {
-	Status s;
 	ColumnFamilyDescriptor descriptor;
 	ColumnFamilyHandle * handle;
 
@@ -172,7 +163,7 @@ Database::getHandle(const string& keyspace) {
 	}
 
 	if(!handle) {
-		s = db->CreateColumnFamily(ColumnFamilyOptions(), keyspace, &handle);
+		auto s = db->CreateColumnFamily(ColumnFamilyOptions(), keyspace, &handle);
 		assert(s.ok());
 		handles.push_back(handle);
 		cfd.push_back(ColumnFamilyDescriptor(keyspace, ColumnFamilyOptions()));	

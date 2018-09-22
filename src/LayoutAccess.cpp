@@ -49,7 +49,7 @@ LayoutAccess::release(const string& layoutName) {
 
 void 
 LayoutAccess::createLayout(const string& name, Layout& layout) {
-	const string& layoutKey = string("s_") + name + string(":0");
+	const auto& layoutKey = "s_" + name + ":0";
 	auto key = _db.get(layoutKey, name);
 	
 	if(key)	return; 
@@ -69,15 +69,13 @@ LayoutAccess::migrateLayout(const string& name, Layout& layout) {
 
 void
 LayoutAccess::_createLayout(const string& name, Layout& layout, int version) {
-	const string& layoutKey = string("s_") + name + string(":") + to_string(version);
-	const string& currentLayoutKey = string("s_") + name + string(":c");
 	map<string, int> slots;
-	auto key = _db.get(layoutKey, name);
 	stringstream buffer;
+	const auto& layoutKey = "s_" + name + ":" + to_string(version);
+	const auto& currentLayoutKey = "s_" + name + ":c";
+	auto key = _db.get(layoutKey, name);
 	
-	if(key) {
-		return; // Key exists
-	}
+	if(key)	return; // Key exists
 
 	layout.version = version;
 	for(auto slot : layout.slots) {
@@ -97,14 +95,14 @@ LayoutAccess::getLayout(const string& name) {
 
 unique_ptr<Layout>
 LayoutAccess::getLayout(const string& name, int version) {
-	const string& layoutKey = string("s_") + name + string(":") + (version < 0 ? "c" : to_string(version));
+	const auto& layoutKey = "s_" + name + ":" + (version < 0 ? "c" : to_string(version));
 	auto rawLayout = _db.get(layoutKey, name);
 
 	if(!rawLayout) return nullptr; 
 	
-	string str = *rawLayout;
-	msgpack::object_handle oh = msgpack::unpack(str.data(), str.size());
-	msgpack::object deserialized = oh.get();
+	auto str = *rawLayout;
+	auto oh = msgpack::unpack(str.data(), str.size());
+	auto deserialized = oh.get();
 
 	msgpack::type::tuple<int, map<string, int>> stored;
 	deserialized.convert(stored);

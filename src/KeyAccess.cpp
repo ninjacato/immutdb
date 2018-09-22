@@ -28,11 +28,11 @@ KeyAccess::put(const string& name, vector<SlotValue> values, const string& lname
 		if(!validPut) return -1;
 	}		
 
-	auto prefix = string("k_") + lname + string(":") + name + string(":");
+	auto prefix = "k_" + lname + ":" + name + ":";
 	auto version = 0;
 	auto cursor = 0;
 
-	auto cursorName = string("c") + prefix;
+	auto cursorName = "c" + prefix;
 	auto currentCursor = _db.get(cursorName, lname);
 	if(currentCursor) {
 		cursor = stoi(*currentCursor);
@@ -51,14 +51,14 @@ KeyAccess::put(const string& name, vector<SlotValue> values, const string& lname
 
 unique_ptr<vector<SlotValue>>
 KeyAccess::get(const string& name, int version, const string& lname) {
-	auto prefix = string("k_") + lname + string(":") + name + string(":");
+	auto prefix = "k_" + lname + ":" + name + ":";
 	auto slotName = prefix + to_string(version);
 	auto slot = _db.get(slotName, lname);
 	if(!slot) return nullptr;
 
 	auto str = *slot;
-	msgpack::object_handle oh = msgpack::unpack(str.data(), str.size());
-	msgpack::object deserialized = oh.get();
+	auto oh = msgpack::unpack(str.data(), str.size());
+	auto deserialized = oh.get();
 
 	vector<SlotValue> slots;
 	deserialized.convert(slots);
