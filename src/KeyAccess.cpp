@@ -18,14 +18,14 @@ KeyAccess::put(const string& name, vector<SlotValue> values, const string& lname
 	for(auto value : values) {
 		validPut = false;
 
-		for(auto slot : (*layout)->slots) {
+		for(auto slot : layout->slots) {
 			if(value.name == slot.name && value.type == slot.type) {
-				value.layoutVersion = (*layout)->version;
+				value.layoutVersion = layout->version;
 				validPut = true;
 			}	
 		}
 
-		if(!validPut) return false;
+		if(!validPut) return -1;
 	}		
 
 	auto prefix = string("k_") + lname + string(":") + name + string(":");
@@ -35,7 +35,7 @@ KeyAccess::put(const string& name, vector<SlotValue> values, const string& lname
 	auto cursorName = string("c") + prefix;
 	auto currentCursor = _db.get(cursorName, lname);
 	if(currentCursor) {
-		cursor = stoi(**currentCursor);
+		cursor = stoi(*currentCursor);
 		cursor++;
 		version = cursor;
 	}
@@ -49,17 +49,14 @@ KeyAccess::put(const string& name, vector<SlotValue> values, const string& lname
 	return version;
 }
 
-optional<unique_ptr<vector<SlotValue>>>
+unique_ptr<vector<SlotValue>>
 KeyAccess::get(const string& name, int version, const string& lname) {
-	auto layout = _la.getLayout(lname);	
-	if(!layout) return nullopt;
-	
 	auto prefix = string("k_") + lname + string(":") + name + string(":");
 	auto slotName = prefix + to_string(version);
 	auto slot = _db.get(slotName, lname);
-	if(!slot) return nullopt;
+	if(!slot) return nullptr;
 
-	auto str = **slot;
+	auto str = *slot;
 	msgpack::object_handle oh = msgpack::unpack(str.data(), str.size());
 	msgpack::object deserialized = oh.get();
 
@@ -69,21 +66,13 @@ KeyAccess::get(const string& name, int version, const string& lname) {
 	return make_unique<vector<SlotValue>>(slots);
 }
 
-optional<unique_ptr<vector<vector<SlotValue>>>>
+unique_ptr<vector<vector<SlotValue>>>
 KeyAccess::getAllVersions(const string& name, const string& lname) {
-	auto layout = _la.getLayout(lname);	
-	if(!layout) return nullopt;
-
 	vector<vector<SlotValue>> versions;
 	auto prefix = string("k_") + lname + string(":") + name + string(":");
-	auto cursorName = string("c") + prefix;
-	auto cursorOpt = _db.get(cursorName, lname);
-	if(!cursorOpt) return nullopt;
+	auto allValues = _db.getAll(prefix, lname);
 
-	auto cursor = **cursorOpt;
-	auto allValues = _db.getAll(prefix + "0", lname, stoi(cursor));
-
-	if(!allValues) return nullopt;
+	if(!allValues) return nullptr;
 
 	auto values = *allValues;
 	for(auto str : values) {
@@ -98,3 +87,28 @@ KeyAccess::getAllVersions(const string& name, const string& lname) {
 
 	return make_unique<vector<vector<SlotValue>>>(versions);
 }
+
+/**
+optional<unique_ptr<vector<vector<SlotValue>>>>
+KeyAccess::getAllKeys(const string& lname) {
+	auto prefix = string("k_") + lname + string(":");
+	auto allValues = _db.getAll(prefix, lname, INT_MAX);
+
+	if(!allValues) return nullptr;
+
+	map<string, vector<SlotValue>> kvs;
+
+	auto values = *allValues;
+	for(auto str : values) {
+		msgpack::object_handle oh = msgpack::unpack(str.data(), str.size());
+		msgpack::object deserialized = oh.get();
+
+		vector<SlotValue> slots;
+		deserialized.convert(slots);
+		versions.push_back(slots);
+	}
+
+	return make_unique<vector<vector<SlotValue>>>(versions);
+
+}
+**/

@@ -35,8 +35,8 @@ public:
 	void createLayout(const string& name, Layout& layout);
 	void migrateLayout(const string& name, Layout& layout);
 	void deleteLayout(const string& name);
-	optional<unique_ptr<Layout>> getLayout(const string& name);
-	optional<unique_ptr<Layout>> getLayout(const string& name, int version);
+	unique_ptr<Layout> getLayout(const string& name);
+	unique_ptr<Layout> getLayout(const string& name, int version);
 };
 
 #endif

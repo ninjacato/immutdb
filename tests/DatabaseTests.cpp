@@ -47,9 +47,9 @@ TEST_CASE("Database can get and put key", "[Database]") {
 	db.open();
 	
 	db.put("akey", "avalue");
-	optional<unique_ptr<string>> value = db.get("akey");
+	unique_ptr<string> value = db.get("akey");
 
-	REQUIRE(**value == string("avalue"));
+	REQUIRE(*value == string("avalue"));
 
 	system(delcmd.c_str());
 }
@@ -64,7 +64,7 @@ TEST_CASE("Database can delete a key", "[Database]") {
 	db.put("akey", "avalue");
 	db.del("akey");
 
-	optional<unique_ptr<string>> value = db.get("akey");
+	unique_ptr<string> value = db.get("akey");
 	REQUIRE(!value);
 
 	system(delcmd.c_str());
@@ -78,10 +78,10 @@ TEST_CASE("Database can get a custom keyspace", "[Database]") {
 	cdb.open();
 	
 	cdb.put("akey", "avalue", "Customer");
-	optional<unique_ptr<string>> value = cdb.get("akey", "Customer");
-	optional<unique_ptr<string>> novalue = cdb.get("akey");
+	unique_ptr<string> value = cdb.get("akey", "Customer");
+	unique_ptr<string> novalue = cdb.get("akey");
 
-	REQUIRE(**value == string("avalue"));
+	REQUIRE(*value == string("avalue"));
 	REQUIRE(!novalue);
 
 	system(delcmd.c_str());
@@ -110,25 +110,25 @@ TEST_CASE("Database can open read only DB", "[Database]") {
 	db.open();
 	
 	db.put("akey", "avalue");
-	optional<unique_ptr<string>> value = db.get("akey");
+	unique_ptr<string> value = db.get("akey");
 
-	REQUIRE(**value == string("avalue"));
+	REQUIRE(*value == string("avalue"));
 
 	Database db1(path);
 	db1.openReadOnly();
-	optional<unique_ptr<string>> value1 = db1.get("akey");
+	unique_ptr<string> value1 = db1.get("akey");
 
 	Database db2(path);
 	db2.openReadOnly();
-	optional<unique_ptr<string>> value2 = db2.get("akey");
+	unique_ptr<string> value2 = db2.get("akey");
 
 	Database db3(path);
 	db3.openReadOnly();
-	optional<unique_ptr<string>> value3 = db3.get("akey");
+	unique_ptr<string> value3 = db3.get("akey");
 
-	REQUIRE(**value1 == string("avalue"));
-	REQUIRE(**value2 == string("avalue"));
-	REQUIRE(**value3 == string("avalue"));
+	REQUIRE(*value1 == string("avalue"));
+	REQUIRE(*value2 == string("avalue"));
+	REQUIRE(*value3 == string("avalue"));
 
 	system(delcmd.c_str());
 }

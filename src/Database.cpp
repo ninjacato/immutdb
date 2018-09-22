@@ -65,12 +65,12 @@ Database::close(void) {
 	closed = true;
 }
 
-optional<unique_ptr<string>> 
+unique_ptr<string>
 Database::get(const string& key) {
 	return get(key, kDefaultColumnFamilyName);
 }
 
-optional<unique_ptr<string>> 
+unique_ptr<string>
 Database::get(const string& key, const string& keyspace) {
 	Status s;
 
@@ -79,19 +79,19 @@ Database::get(const string& key, const string& keyspace) {
 	s = db->Get(ReadOptions(), handle, key, &(*value));	
 
 	if(s.IsNotFound()) {
-		return nullopt;
+		return nullptr;
 	}
 	
 	return value;
 }
 
 unique_ptr<vector<string>>
-Database::getAll(const string& key, const string& keyspace, int range) {
+Database::getAll(const string& key, const string& keyspace) {
 	auto handle = getHandle(keyspace);
 	auto * it = db->NewIterator(ReadOptions(), handle);
 	vector<string> values;
 
-	for(it->Seek(key); it->Valid() && range >= 0; it->Next(), range--) {
+	for(it->Seek(key); it->Valid() && !it->key().ToString().compare(0, key.size(), key); it->Next()) {
 		auto str = it->value().ToString();
 		values.push_back(str);
 	}
@@ -100,6 +100,7 @@ Database::getAll(const string& key, const string& keyspace, int range) {
 	
 	return make_unique<vector<string>>(values);
 }
+
 void 
 Database::put(const string& key, const string& val) {
 	put(key, val, kDefaultColumnFamilyName);

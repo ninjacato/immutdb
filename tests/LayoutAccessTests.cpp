@@ -39,8 +39,6 @@ TEST_CASE("Can create and get layout", "[Layout]") {
 
 	Layout layout { 1, slots };
 
-	optional<unique_ptr<Layout>> created_layout;
-
 	Database db(path);
 	db.open();
 
@@ -49,15 +47,15 @@ TEST_CASE("Can create and get layout", "[Layout]") {
 
 	layoutAccess.createLayout(layoutName, layout);
 
-	created_layout = layoutAccess.getLayout(layoutName);
+	auto created_layout = layoutAccess.getLayout(layoutName);
 	REQUIRE(created_layout);
 
-	REQUIRE((**created_layout).version == 0);
-	REQUIRE((**created_layout).slots.size() == 2);
-	REQUIRE((**created_layout).slots[0].name == slots[1].name);
-	REQUIRE((**created_layout).slots[0].type == slots[1].type);
-	REQUIRE((**created_layout).slots[1].name == slots[0].name);
-	REQUIRE((**created_layout).slots[1].type == slots[0].type);
+	REQUIRE(created_layout->version == 0);
+	REQUIRE((*created_layout).slots.size() == 2);
+	REQUIRE((*created_layout).slots[0].name == slots[1].name);
+	REQUIRE((*created_layout).slots[0].type == slots[1].type);
+	REQUIRE((*created_layout).slots[1].name == slots[0].name);
+	REQUIRE((*created_layout).slots[1].type == slots[0].type);
 
 	layoutAccess.release(layoutName);
 	REQUIRE(!layoutAccess.hasLock(layoutName));
@@ -77,8 +75,6 @@ TEST_CASE("Can migrate a layout to new layout structure", "[Layout]") {
 
 	Layout layout { 0, slots };
 
-	optional<unique_ptr<Layout>> created_layout;
-
 	Database db(path);
 	db.open();
 
@@ -88,10 +84,10 @@ TEST_CASE("Can migrate a layout to new layout structure", "[Layout]") {
 
 	layoutAccess.createLayout(layoutName, layout);
 
-	created_layout = layoutAccess.getLayout(layoutName);
+	auto created_layout = layoutAccess.getLayout(layoutName);
 	REQUIRE(created_layout);
 
-	REQUIRE((**created_layout).version == layout.version);
+	REQUIRE(created_layout->version == layout.version);
 	layoutAccess.release(layoutName);
 
 	// Migrate to a new layout
@@ -101,17 +97,17 @@ TEST_CASE("Can migrate a layout to new layout structure", "[Layout]") {
 
 	layoutAccess.migrateLayout(layoutName, newLayout);
 
-	optional<unique_ptr<Layout>> new_layout;
+	unique_ptr<Layout> new_layout;
 	new_layout = layoutAccess.getLayout(layoutName, 1);
-	auto n_layout = **new_layout;
+	auto n_layout = *new_layout;
 
-	optional<unique_ptr<Layout>> old_layout;
+	unique_ptr<Layout> old_layout;
 	old_layout = layoutAccess.getLayout(layoutName, 0);
-	auto o_layout = **old_layout;
+	auto o_layout = *old_layout;
 
-	optional<unique_ptr<Layout>> current_layout;
+	unique_ptr<Layout> current_layout;
 	current_layout = layoutAccess.getLayout(layoutName);
-	auto c_layout = **new_layout;
+	auto c_layout = *new_layout;
 
 	REQUIRE(n_layout.version == 1);
 	REQUIRE(n_layout.slots.size() == 3);
@@ -138,7 +134,7 @@ TEST_CASE("Can delete a layout", "[Layout]") {
 
 	Layout layout { 1, slots };
 
-	optional<unique_ptr<Layout>> created_layout;
+	unique_ptr<Layout> created_layout;
 
 	Database db(path);
 	db.open();

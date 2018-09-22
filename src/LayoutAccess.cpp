@@ -20,7 +20,7 @@ LayoutAccess::lock(const string& layoutName) {
 
 	ss << tid;
 
-	if(!lock_val || (lock_val && (**lock_val).empty())) {
+	if(!lock_val || (lock_val && lock_val->empty())) {
 		_db.put(lock_key, ss.str(), layoutName);
 	} else {
 		return false;
@@ -28,7 +28,7 @@ LayoutAccess::lock(const string& layoutName) {
 
 	// Read back to ensure another thread didn't overwrite it
 	lock_val = _db.get(lock_key, layoutName);
-	_locks[layoutName] = lock_val && **lock_val == ss.str();
+	_locks[layoutName] = lock_val && *lock_val == ss.str();
 	return _locks[layoutName];	
 }
 
@@ -41,7 +41,7 @@ LayoutAccess::release(const string& layoutName) {
 
 	ss << tid;
 
-	if(lock_val && **lock_val == ss.str()) {
+	if(lock_val && *lock_val == ss.str()) {
 		_db.del(lock_key, layoutName);
 		_locks[layoutName] = false;
 	} 
@@ -59,11 +59,10 @@ LayoutAccess::createLayout(const string& name, Layout& layout) {
 
 void
 LayoutAccess::migrateLayout(const string& name, Layout& layout) {
-	auto wrappedCurrentLayout = getLayout(name);
-	if(!wrappedCurrentLayout) return;
+	auto currentLayout = getLayout(name);
+	if(!currentLayout) return;
 
-	auto currentLayout = **wrappedCurrentLayout; 	
-	layout.version = currentLayout.version + 1;
+	layout.version = currentLayout->version + 1;
 
 	_createLayout(name, layout, layout.version);
 }
@@ -91,19 +90,19 @@ LayoutAccess::_createLayout(const string& name, Layout& layout, int version) {
 	_db.put(currentLayoutKey, buffer.str(), name); 
 }
 
-optional<unique_ptr<Layout>>
+unique_ptr<Layout>
 LayoutAccess::getLayout(const string& name) {
 	return getLayout(name, LA_CURRENT_LAYOUT);
 }
 
-optional<unique_ptr<Layout>>
+unique_ptr<Layout>
 LayoutAccess::getLayout(const string& name, int version) {
 	const string& layoutKey = string("s_") + name + string(":") + (version < 0 ? "c" : to_string(version));
 	auto rawLayout = _db.get(layoutKey, name);
 
-	if(!rawLayout) return nullopt; 
+	if(!rawLayout) return nullptr; 
 	
-	string str = **rawLayout;
+	string str = *rawLayout;
 	msgpack::object_handle oh = msgpack::unpack(str.data(), str.size());
 	msgpack::object deserialized = oh.get();
 

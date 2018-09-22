@@ -22,8 +22,9 @@ class KeyAccess {
 public:
 	KeyAccess(Database& db, LayoutAccess& la);
 	int put(const string& name, vector<SlotValue> values, const string& lname);
-	optional<unique_ptr<vector<SlotValue>>> get(const string& name, int version, const string& lname);
-	optional<unique_ptr<vector<vector<SlotValue>>>> getAllVersions(const string& name, const string& lname);
+	unique_ptr<vector<SlotValue>> get(const string& name, int version, const string& lname);
+	unique_ptr<vector<vector<SlotValue>>> getAllVersions(const string& name, const string& lname);
+	unique_ptr<vector<vector<SlotValue>>> getAllKeys(const string& lname);
 };
 
 #endif

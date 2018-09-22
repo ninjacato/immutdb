@@ -30,8 +30,8 @@ public:
 	void del(const string& key);
 	void del(const string& key, const string& keyspace);
 	void deleteKeyspace(const string& keyspace);
-	optional<unique_ptr<string>> get(const string& key);
-	optional<unique_ptr<string>> get(const string& key, const string& keyspace);
-	unique_ptr<vector<string>> getAll(const string& key, const string& keyspace, int range);
+	unique_ptr<string> get(const string& key);
+	unique_ptr<string> get(const string& key, const string& keyspace);
+	unique_ptr<vector<string>> getAll(const string& key, const string& keyspace);
 };
 #endif
