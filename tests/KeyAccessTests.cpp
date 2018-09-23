@@ -71,5 +71,11 @@ TEST_CASE("Can set and get a key", "[Key]") {
 		}
 	}
 
+	auto allKVs = keys.getAllKeys("Customer");
+	// allKV[keyName][version][slot]
+	REQUIRE(allKVs->at("CatoAuestad")[0][0].value == "Cato Auestad");
+	REQUIRE(allKVs->at("CatoAuestad")[1][0].value == "Cato");
+	REQUIRE(allKVs->at("CatoAuestad")[2][0].value == "Auestad");
+
 	system(delcmd.c_str());
 }

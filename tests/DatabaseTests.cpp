@@ -54,8 +54,27 @@ TEST_CASE("Database can get and put key", "[Database]") {
 	system(delcmd.c_str());
 }
 
-TEST_CASE("Database can delete a key", "[Database]") {
+TEST_CASE("Database can put keys and get all with keys", "[Database]") {
 	const string& path = string("/tmp/immutdb_tests_") + string(random_string(21));
+	const string& delcmd = string("rm -r ") + path;
+
+	Database db(path);
+	db.open();
+	
+	db.put("k_Customer:CatoAuestad:0", "avalue0", "Customer");
+	db.put("k_Customer:CatoAuestad:1", "avalue1", "Customer");
+	db.put("k_Customer:CatoAuestad:2", "avalue2", "Customer");
+	db.put("k_Customer:Cato:0", "bvalue0", "Customer");
+	db.put("k_Customer:Cato:1", "bvalue1", "Customer");
+
+	auto allKVs = db.getAllWithKeys("k_Customer:", "Customer");
+	REQUIRE(allKVs->at("k_Customer:CatoAuestad:0") == "avalue0");
+
+	system(delcmd.c_str());
+}
+
+TEST_CASE("Database can delete a key", "[Database]") {
+	const string& path = string("/tmp/immutdb_tests_") + string(random_string(22));
 	const string& delcmd = string("rm -r ") + path;
 
 	Database db(path);
@@ -71,7 +90,7 @@ TEST_CASE("Database can delete a key", "[Database]") {
 }
 
 TEST_CASE("Database can get a custom keyspace", "[Database]") {
-	const string& path = string("/tmp/immutdb_tests_") + string(random_string(22));
+	const string& path = string("/tmp/immutdb_tests_") + string(random_string(23));
 	const string& delcmd = string("rm -r ") + path;
 
 	Database cdb(path);
@@ -88,7 +107,7 @@ TEST_CASE("Database can get a custom keyspace", "[Database]") {
 }
 
 TEST_CASE("Database can check status", "[Database]") {
-	const string& path = string("/tmp/immutdb_tests_") + string(random_string(23));
+	const string& path = string("/tmp/immutdb_tests_") + string(random_string(24));
 	const string& delcmd = string("rm -r ") + path;
 
 	Database cdb(path);
@@ -103,7 +122,7 @@ TEST_CASE("Database can check status", "[Database]") {
 }
 
 TEST_CASE("Database can open read only DB", "[Database]") {
-	const string& path = string("/tmp/immutdb_tests_") + string(random_string(20));
+	const string& path = string("/tmp/immutdb_tests_") + string(random_string(25));
 	const string& delcmd = string("rm -r ") + path;
 
 	Database db(path);

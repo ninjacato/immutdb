@@ -45,6 +45,7 @@ KeyAccess::put(const string& name, vector<SlotValue> values, const string& lname
 	msgpack::pack(buffer, values);
 	_db.put(keyName, buffer.str(), lname); 
 	_db.put(cursorName, to_string(cursor), lname); 
+	_la.incrementRecordCount(lname);
 
 	return version;
 }
@@ -69,7 +70,7 @@ KeyAccess::get(const string& name, int version, const string& lname) {
 unique_ptr<vector<vector<SlotValue>>>
 KeyAccess::getAllVersions(const string& name, const string& lname) {
 	vector<vector<SlotValue>> versions;
-	auto prefix = string("k_") + lname + string(":") + name + string(":");
+	auto prefix = "k_" + lname + ":" + name + ":";
 	auto allValues = _db.getAll(prefix, lname);
 
 	if(!allValues) return nullptr;
@@ -88,27 +89,24 @@ KeyAccess::getAllVersions(const string& name, const string& lname) {
 	return make_unique<vector<vector<SlotValue>>>(versions);
 }
 
-/**
-optional<unique_ptr<vector<vector<SlotValue>>>>
+unique_ptr<map<string, vector<vector<SlotValue>>>>
 KeyAccess::getAllKeys(const string& lname) {
-	auto prefix = string("k_") + lname + string(":");
-	auto allValues = _db.getAll(prefix, lname, INT_MAX);
+	auto prefix = "k_" + lname + ":";
+	auto allKeys = _db.getAllWithKeys(prefix, lname);
+	if(!allKeys) return nullptr;
 
-	if(!allValues) return nullptr;
+	map<string, vector<vector<SlotValue>>> result;
+	for(auto const& [key, val] : *allKeys) {
+		auto keyName = key.substr(prefix.length()); // Strip prefix
+		keyName = keyName.substr(0, keyName.find(":")); // Strip version no
 
-	map<string, vector<SlotValue>> kvs;
-
-	auto values = *allValues;
-	for(auto str : values) {
-		msgpack::object_handle oh = msgpack::unpack(str.data(), str.size());
+		auto oh = msgpack::unpack(val.data(), val.size());
 		msgpack::object deserialized = oh.get();
-
 		vector<SlotValue> slots;
 		deserialized.convert(slots);
-		versions.push_back(slots);
+		
+		result[keyName].push_back(slots);
 	}
-
-	return make_unique<vector<vector<SlotValue>>>(versions);
-
+	
+	return make_unique<map<string, vector<vector<SlotValue>>>>(result);
 }
-**/

@@ -33,5 +33,6 @@ public:
 	unique_ptr<string> get(const string& key);
 	unique_ptr<string> get(const string& key, const string& keyspace);
 	unique_ptr<vector<string>> getAll(const string& key, const string& keyspace);
+	unique_ptr<map<string, string>> getAllWithKeys(const string& key, const string &keyspace);
 };
 #endif

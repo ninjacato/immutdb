@@ -86,7 +86,6 @@ Database::getAll(const string& key, const string& keyspace) {
 	auto * it = db->NewIterator(ReadOptions(), handle);
 	vector<string> values;
 
-	// TODO: Crazy inefficient. Seek takes a limit, use this instead of ToString()
 	for(it->Seek(key); it->Valid() && !it->key().ToString().compare(0, key.size(), key); it->Next()) {
 		auto str = it->value().ToString();
 		values.push_back(str);
@@ -95,6 +94,23 @@ Database::getAll(const string& key, const string& keyspace) {
 	delete it;
 	
 	return make_unique<vector<string>>(values);
+}
+
+unique_ptr<map<string, string>>
+Database::getAllWithKeys(const string& key, const string& keyspace) {
+	auto handle = getHandle(keyspace);
+	auto * it = db->NewIterator(ReadOptions(), handle);
+
+	auto kvs = make_unique<map<string, string>>();
+	for(it->Seek(key); it->Valid() && !it->key().ToString().compare(0, key.size(), key); it->Next()) {
+		auto str = it->value().ToString();
+		auto k = it->key().ToString();
+		kvs->insert(pair<string, string>(k, str));
+	}
+
+	delete it;
+	
+	return kvs;
 }
 
 void 

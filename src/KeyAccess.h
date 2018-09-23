@@ -24,7 +24,7 @@ public:
 	int put(const string& name, vector<SlotValue> values, const string& lname);
 	unique_ptr<vector<SlotValue>> get(const string& name, int version, const string& lname);
 	unique_ptr<vector<vector<SlotValue>>> getAllVersions(const string& name, const string& lname);
-	unique_ptr<vector<vector<SlotValue>>> getAllKeys(const string& lname);
+	unique_ptr<map<string, vector<vector<SlotValue>>>> getAllKeys(const string& lname);
 };
 
 #endif

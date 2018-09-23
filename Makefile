@@ -27,7 +27,7 @@ $(SRCDIR)/KeyAccess.o: $(SRCDIR)/KeyAccess.cpp
 $(TESTDIR)/DatabaseTests: $(TESTDIR)/DatabaseTests.o $(SRCDIR)/Database.o
 	$(CC) -o $@.exedat $? -lrocksdb
 
-$(TESTDIR)/LayoutAccessTests: $(TESTDIR)/LayoutAccessTests.o $(SRCDIR)/LayoutAccess.o $(SRCDIR)/Database.o
+$(TESTDIR)/LayoutAccessTests: $(TESTDIR)/LayoutAccessTests.o $(SRCDIR)/LayoutAccess.o $(SRCDIR)/Database.o $(SRCDIR)/KeyAccess.o
 	$(CC) -o $@.exedat $? -lrocksdb
 
 $(TESTDIR)/KeyAccessTests: $(TESTDIR)/KeyAccessTests.o $(SRCDIR)/KeyAccess.o $(SRCDIR)/LayoutAccess.o $(SRCDIR)/Database.o
