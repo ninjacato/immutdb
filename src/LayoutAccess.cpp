@@ -133,3 +133,25 @@ LayoutAccess::hasLock(const string& layoutName) {
 		return false;
 	}		
 }
+
+int
+LayoutAccess::countRecords(const string& name) {
+	const auto& layoutKey = "s_" + name + ":count"; 
+	auto recordCount = _db.get(layoutKey, name);
+
+	if(!recordCount) return 0; 
+	
+	auto count = stoi(*recordCount);
+	return count;
+}
+
+void
+LayoutAccess::incrementRecordCount(const string& name) {
+	const auto& layoutKey = "s_" + name + ":count"; 
+	auto recordCount = _db.get(layoutKey, name);
+	auto count = 0;
+	if(recordCount) count = stoi(*recordCount); 
+	
+	count++;
+	_db.put(layoutKey, to_string(count), name);
+}

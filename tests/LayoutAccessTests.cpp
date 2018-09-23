@@ -3,6 +3,7 @@
 #include <cstdio>
 
 #include "../src/LayoutAccess.h"
+#include "../src/KeyAccess.h"
 
 TEST_CASE("Set layout lock", "[Layout}") {
 	const string& path = string("/tmp/immutdb_tests_layout_lock");
@@ -122,7 +123,6 @@ TEST_CASE("Can migrate a layout to new layout structure", "[Layout]") {
 }
 
 TEST_CASE("Can delete a layout", "[Layout]") {
-
 	const string& path = string("/tmp/immutdb_tests_layout_delete");
 	const string& delcmd = string("rm -r ") + path;
 	const string& layoutName = "Customer";
@@ -149,6 +149,42 @@ TEST_CASE("Can delete a layout", "[Layout]") {
 	layoutAccess.deleteLayout(layoutName);
 	created_layout = layoutAccess.getLayout(layoutName);
 	REQUIRE(!created_layout);
+
+	system(delcmd.c_str());
+}
+
+TEST_CASE("Can set and get record count", "[Layout]") {
+	const string& path = string("/tmp/immutdb_tests_layout_delete");
+	const string& delcmd = string("rm -r ") + path;
+	const string& layoutName = "Customer";
+	const string& keyName = "CatoAuestad";
+	
+	vector<Slot> slots {
+		{ "Name", SlotType::STRING },
+		{ "Age", SlotType::INT }
+	};
+
+	vector<SlotValue> slotValues {
+		{ "Name", SlotType::STRING, "Cato Auestad" },
+		{ "Age", SlotType::INT, "30" }
+	};
+
+	Layout layout { 1, slots };
+
+	Database db(path);
+	db.open();
+
+	LayoutAccess layoutAccess(db);	
+	layoutAccess.createLayout(layoutName, layout);
+	
+	KeyAccess keys(db, layoutAccess);
+
+	REQUIRE(0 == keys.put(keyName, slotValues, layoutName));
+	slotValues[0].value = "Cato";
+	REQUIRE(1 == keys.put(keyName, slotValues, layoutName));
+
+	auto records = layoutAccess.countRecords(layoutName);
+	REQUIRE(2 == records);
 
 	system(delcmd.c_str());
 }
